@@ -1,12 +1,16 @@
 use std::fmt;
 
+mod lexer;
+
+use lexer::lexer;
+
 struct Var {
     name: String,
 }
 
-struct App {
-    left: Box<Expr>,
-    right: Box<Expr>,
+struct App { 
+    left: Box<Expr>, // Function f
+    right: Box<Expr>, // Expression x -> f(x)
 }
 
 struct Lam {
@@ -49,7 +53,10 @@ impl fmt::Display for Expr {
 }
 
 fn main() {
-    println!("{}", lambda_if());
+    let input = String::from("λx.((x) (x))");
+    let tokens = lexer(input);
+
+    println!("{:?}", tokens);
 }
 
 fn lambda_expression_test() -> Expr {
@@ -116,3 +123,6 @@ fn lambda_if() -> Expr {
         })),
     })
 }
+
+// Lexer
+// Parser

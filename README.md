@@ -19,4 +19,7 @@ Define the types to model a term in LC
 
 ### Ref
 
-https://dev.to/chshersh/learn-lambda-calculus-in-10-minutes-with-ocaml-56ba
+- https://dev.to/chshersh/learn-lambda-calculus-in-10-minutes-with-ocaml-56ba
+- https://github.com/reu/rinha-compiladores/blob/master/src/main.rs
+- https://github.com/hnrbs/lambda-calculus
+- https://github.com/BRonen/poggers-lang/tree/main

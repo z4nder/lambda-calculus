@@ -15,3 +15,8 @@ Define the types to model a term in LC
 
 ### Parsing
  Implement a parser to LC
+
+
+### Ref
+
+https://dev.to/chshersh/learn-lambda-calculus-in-10-minutes-with-ocaml-56ba

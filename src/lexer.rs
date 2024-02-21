@@ -1,6 +1,5 @@
-/**
- * 
- * λx.((x) (x))
+/*
+ λx.((x) (x))
  [x] Create tokens
  [X] Recive text input
  [X] Explode chars

@@ -1,8 +1,10 @@
 use std::fmt;
 
 mod lexer;
+mod parser;
 
 use lexer::lexer;
+use parser::parser;
 
 struct Var {
     name: String,
@@ -24,39 +26,13 @@ enum Expr {
     Lambda(Lam),
 }
 
-impl fmt::Display for Var {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
-    }
-}
 
-impl fmt::Display for App {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({}) ({})", self.left, self.right)
-    }
-}
-
-impl fmt::Display for Lam {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "λ{}.({})", self.param, self.body)
-    }
-}
-
-impl fmt::Display for Expr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Expr::Variable(var) => write!(f, "{}", var),
-            Expr::Application(app) => write!(f, "{}", app),
-            Expr::Lambda(lam) => write!(f, "{}", lam),
-        }
-    }
-}
 
 fn main() {
     let input = String::from("λx.((x) (x))");
     let tokens = lexer(input);
 
-    println!("{:?}", tokens);
+    parser(tokens);
 }
 
 fn lambda_expression_test() -> Expr {

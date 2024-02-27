@@ -32,7 +32,12 @@ fn main() {
     let input = String::from("λx.((x) (x))");
     let tokens = lexer(input);
 
-    parser(tokens);
+    let result = parser(tokens);
+
+    match result {
+        Ok(expr) => println!("{}", expr),
+        Err(err) => println!("ERROR => {}", err),        
+    }
 }
 
 fn lambda_expression_test() -> Expr {

@@ -43,7 +43,10 @@ impl fmt::Display for App {
 
 impl fmt::Display for Lam {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "λ{}.({})", self.param, self.body)
+        match &self.body {
+            Some(body) => write!(f, "λ{}.({})", self.param, body),
+            None => write!(f, "Empty body λ expression"),
+        }
     }
 }
 
@@ -58,44 +61,49 @@ impl fmt::Display for Expr {
 }
 
 
-pub fn parser(tokens: Vec<Token>)  {
-    let mut tokens: Vec<Token> = Vec::new();
-
-    let mut ast: Vec<Expr> = Vec::new();
+pub fn parser(tokens: Vec<Token>) -> Result<Expr, String> {
+    let mut expression: Result<Expr, String> = Err("Empty expression".to_string());
 
     for (index, token) in tokens.iter().enumerate() {
         match token {
             Token::Lambda => {
-                let expression = parse_lambda(&tokens, index);
+                expression = Ok(parse_lambda(&tokens, index+1)?);
             }
-            _ => panic!("Failed to parse")
+            Token::LParen => todo!(),
+            Token::RParen => todo!(),
+            Token::Dot => todo!(),
+            Token::Var(_) => todo!(),
+            _ => return Err(format!("Invalid char {:?}", token)),
         }
     }
+    
+    expression
 }
 
-pub fn parse_lambda(tokens: &Vec<Token>, index: usize) -> Result<Expr, String>{
-    match tokens.get(index+1) {
+pub fn parse_lambda(tokens: &Vec<Token>, next_index: usize) -> Result<Expr, String>{
+    match tokens.get(next_index) {
         Some(next_token) => {
             match next_token {
+                //  Call parse Here()
                 Token::Var(param_name) => {
-                    match parse_dot(tokens, index) {
+                    match parse_dot(tokens, next_index+1) {
                         None => Ok(Expr::Lambda(Lam {
                             param: param_name.clone(),
                             body: None,
-                            })),
+                        })),
                         Some(err) => Err(err)    
                     }
                    
                 }
-                _ => Err("Invalid char {TOKEN}".to_string())
+                _ => Err("Invalid char {TOKEN}, expected 'Var'".to_string())
             }
         }
-        None => Err("Incompleted lambda expression".to_string())
+        None => Err("Incompleted lambda expression, expected 'Var'".to_string())
     }    
 }
 
-pub fn parse_dot(tokens: &Vec<Token>, index: usize) -> Option<String>{
-    match tokens.get(index+1) {
+pub fn parse_dot(tokens: &Vec<Token>, next_index: usize) -> Option<String>{
+    match tokens.get(next_index) {
         Some(next_token) => {
             match next_token {
                 Token::Dot => {

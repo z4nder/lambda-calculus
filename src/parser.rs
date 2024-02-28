@@ -65,10 +65,10 @@ pub fn parser(mut tokens:  Vec<Token>) -> Result<Expr, String> {
     match first_token {
         Some(token) => {
             match token {
-                Token::LParen => expression = parse_l_paren(tokens),
-                Token::Var(var) => expression = Ok(parse_var(var)),
+                Token::LParen => expression = parse_paren(tokens),
+                Token::Var(var) => expression = Ok(parse_var(tokens.clone(), var)),
                 Token::Lambda => expression = Ok(parse_lambda(tokens)?),                
-                Token::RParen => return Err("Invalid char ')'".to_string()),
+                Token::RParen => expression = parse_paren(tokens),
                 Token::Dot => return Err("Invalid char '.'".to_string())   
             };
         }
@@ -78,17 +78,30 @@ pub fn parser(mut tokens:  Vec<Token>) -> Result<Expr, String> {
     expression
 }
 
-pub fn parse_l_paren(mut tokens: Vec<Token>) -> Result<Expr, String>{
+pub fn parse_paren(mut tokens: Vec<Token>) -> Result<Expr, String>{
     // Remove #(
    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
 
    parser(tokens)
 }
 
-pub fn parse_var(var: &String) -> Expr{    
-    Expr::Variable(Var {
-        name: var.clone(),
-    })
+pub fn parse_var(mut tokens: Vec<Token>, var: &String) -> Expr {  
+    // Remove Var
+    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();  
+    match parser(tokens) {
+        Ok(expr) => {
+            return Expr::Application(App {
+                left: Box::new(Expr::Variable(Var {
+                    name: var.clone(),
+                })),
+                right: Box::new(expr),
+            })
+        },
+        _ => Expr::Variable(Var {
+               name: var.clone(),
+             })
+    }
+   
 }
 
 pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
@@ -104,6 +117,8 @@ pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
             // Remove #.
             let tokens= remove_token(tokens);
             
+            //TODO Body precisa ser um Application com left e rigth
+            //TODO Preciso validar se é somente uma VAR ou tem uma aplication :p
             return Ok(Expr::Lambda(Lam {
                 param: var.name,
                 body: Box::new(parser(tokens)?),

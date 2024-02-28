@@ -20,7 +20,7 @@ pub struct App {
 
 pub struct Lam {
     param: String,
-    body: Option<Box<Expr>>,
+    body: Box<Expr>,
 }
 
 pub enum Expr {
@@ -43,10 +43,7 @@ impl fmt::Display for App {
 
 impl fmt::Display for Lam {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.body {
-            Some(body) => write!(f, "λ{}.({})", self.param, body),
-            None => write!(f, "Empty body λ expression"),
-        }
+        write!(f, "λ{}.({})", self.param, self.body)
     }
 }
 
@@ -61,58 +58,70 @@ impl fmt::Display for Expr {
 }
 
 
-pub fn parser(tokens: Vec<Token>) -> Result<Expr, String> {
+pub fn parser(mut tokens:  Vec<Token>) -> Result<Expr, String> {
     let mut expression: Result<Expr, String> = Err("Empty expression".to_string());
-
-    for (index, token) in tokens.iter().enumerate() {
-        match token {
-            Token::Lambda => {
-                expression = Ok(parse_lambda(&tokens, index+1)?);
-            }
-            Token::LParen => todo!(),
-            Token::RParen => todo!(),
-            Token::Dot => todo!(),
-            Token::Var(_) => todo!(),
-            _ => return Err(format!("Invalid char {:?}", token)),
-        }
-    }
+    let first_token = tokens.get(0);
     
+    match first_token {
+        Some(token) => {
+            match token {
+                Token::LParen => expression = parse_l_paren(tokens),
+                Token::Var(var) => expression = Ok(parse_var(var)),
+                Token::Lambda => expression = Ok(parse_lambda(tokens)?),                
+                Token::RParen => return Err("Invalid char ')'".to_string()),
+                Token::Dot => return Err("Invalid char '.'".to_string())   
+            };
+        }
+        None => return Err("Empty expression".to_string())
+    }  
+
     expression
 }
 
-pub fn parse_lambda(tokens: &Vec<Token>, next_index: usize) -> Result<Expr, String>{
-    match tokens.get(next_index) {
-        Some(next_token) => {
-            match next_token {
-                //  Call parse Here()
-                Token::Var(param_name) => {
-                    match parse_dot(tokens, next_index+1) {
-                        None => Ok(Expr::Lambda(Lam {
-                            param: param_name.clone(),
-                            body: None,
-                        })),
-                        Some(err) => Err(err)    
-                    }
-                   
-                }
-                _ => Err("Invalid char {TOKEN}, expected 'Var'".to_string())
-            }
-        }
-        None => Err("Incompleted lambda expression, expected 'Var'".to_string())
-    }    
+pub fn parse_l_paren(mut tokens: Vec<Token>) -> Result<Expr, String>{
+    // Remove #(
+   let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
+
+   parser(tokens)
 }
 
-pub fn parse_dot(tokens: &Vec<Token>, next_index: usize) -> Option<String>{
-    match tokens.get(next_index) {
-        Some(next_token) => {
-            match next_token {
-                Token::Dot => {
-                   None                   
-                }
-                _ => Some("Invalid char {TOKEN}, expected '.'".to_string())
-            }
-        }
-        None => Some("Incompleted lambda expression, expected '.'".to_string())
-    }    
+pub fn parse_var(var: &String) -> Expr{    
+    Expr::Variable(Var {
+        name: var.clone(),
+    })
 }
+
+pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
+    // Remove #λ
+    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
+
+    let param_name = parser(tokens.clone())?;
+    // Remove #Var
+    let tokens = remove_token(tokens);
+
+    match param_name {
+        Expr::Variable(var) => {
+            // Remove #.
+            let tokens= remove_token(tokens);
+            
+            return Ok(Expr::Lambda(Lam {
+                param: var.name,
+                body: Box::new(parser(tokens)?),
+            }));
+        },
+        _ =>  Err("Invalid char {TOKEN}, expected 'Var'".to_string())
+    }
+}
+
+pub fn parse_dot(mut tokens: Vec<Token>) -> Result<Expr, String>{
+
+    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
+
+    parser(tokens)
+}
+
+pub fn remove_token(mut tokens: Vec<Token>) -> Vec<Token>{
+    (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec()
+}
+
 // λx.((x) (x))

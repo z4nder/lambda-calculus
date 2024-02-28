@@ -6,7 +6,7 @@
  [X] Convert chars to array of tokens 
 */
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Token {
     Lambda,
     LParen,
@@ -14,6 +14,7 @@ pub enum Token {
     Dot,
     Var(String),
 }
+
 
 
 pub fn lexer(input: String) -> Vec<Token> {

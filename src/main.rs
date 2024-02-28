@@ -35,7 +35,7 @@ fn main() {
     let result = parser(tokens);
 
     match result {
-        Ok(expr) => println!("{}", expr),
+        Ok(expr) => println!("Result: {}", expr),
         Err(err) => println!("ERROR => {}", err),        
     }
 }

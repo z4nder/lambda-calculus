@@ -51,36 +51,32 @@ impl fmt::Display for Expr {
 }
 
 
-pub fn parser(mut tokens:  Vec<Token>) -> Result<Expr, String> {
-    let mut expression: Result<Expr, String> = Err("Empty expression".to_string());
-    let first_token = tokens.get(0);
-    
-    match first_token {
+pub fn parser(tokens:  Vec<Token>) -> Result<Expr, String> {    
+    match tokens.get(0) {
         Some(token) => {
             match token {
-                Token::LParen => expression = parse_paren(tokens),
-                Token::Var(var) => expression = Ok(parse_var(tokens.clone(), var)),
-                Token::Lambda => expression = Ok(parse_lambda(tokens)?),                
-                Token::RParen => expression = parse_paren(tokens),
+                Token::LParen => return Ok(parse_paren(tokens)?),
+                Token::Var(var) =>  return Ok(parse_var(tokens.clone(), var)),
+                Token::Lambda =>  return Ok(parse_lambda(tokens)?),                
+                Token::RParen =>  return parse_paren(tokens),
                 Token::Dot => return Err("Invalid char '.'".to_string())   
             };
         }
         None => return Err("Empty expression".to_string())
     }  
-
-    expression
 }
 
-pub fn parse_paren(mut tokens: Vec<Token>) -> Result<Expr, String>{
+pub fn parse_paren(tokens: Vec<Token>) -> Result<Expr, String>{
     // Remove #(
-   let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
+    let tokens = remove_token(tokens);
 
    parser(tokens)
 }
 
-pub fn parse_var(mut tokens: Vec<Token>, var: &String) -> Expr {  
-    // Remove Var
-    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();  
+pub fn parse_var(tokens: Vec<Token>, var: &String) -> Expr {  
+    // Remove #Var
+    let tokens = remove_token(tokens);
+
     match parser(tokens) {
         Ok(expr) => {
             return Expr::Application(App {
@@ -97,10 +93,9 @@ pub fn parse_var(mut tokens: Vec<Token>, var: &String) -> Expr {
    
 }
 
-pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
+pub fn parse_lambda(tokens: Vec<Token>) -> Result<Expr, String>{
     // Remove #λ
-    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
-
+    let tokens = remove_token(tokens);
     let param_name = parser(tokens.clone())?;
     // Remove #Var
     let tokens = remove_token(tokens);
@@ -122,5 +117,3 @@ pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
 pub fn remove_token(mut tokens: Vec<Token>) -> Vec<Token>{
     (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec()
 }
-
-// λx.((x) (x))

@@ -1,10 +1,3 @@
-/*
- λx.((x) (x))
- [] Recive tokens
- [] Replace tokens to values
- [] Output AST
-*/
-
 use std::fmt;
 
 use crate::lexer::Token;
@@ -117,8 +110,6 @@ pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
             // Remove #.
             let tokens= remove_token(tokens);
             
-            //TODO Body precisa ser um Application com left e rigth
-            //TODO Preciso validar se é somente uma VAR ou tem uma aplication :p
             return Ok(Expr::Lambda(Lam {
                 param: var.name,
                 body: Box::new(parser(tokens)?),
@@ -126,13 +117,6 @@ pub fn parse_lambda(mut tokens: Vec<Token>) -> Result<Expr, String>{
         },
         _ =>  Err("Invalid char {TOKEN}, expected 'Var'".to_string())
     }
-}
-
-pub fn parse_dot(mut tokens: Vec<Token>) -> Result<Expr, String>{
-
-    let tokens: Vec<Token> = (*tokens.drain(1..).collect::<Vec<Token>>()).to_vec();
-
-    parser(tokens)
 }
 
 pub fn remove_token(mut tokens: Vec<Token>) -> Vec<Token>{

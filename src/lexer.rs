@@ -1,11 +1,3 @@
-/*
- λx.((x) (x))
- [x] Create tokens
- [X] Recive text input
- [X] Explode chars
- [X] Convert chars to array of tokens 
-*/
-
 #[derive(Debug, Clone)]
 pub enum Token {
     Lambda,

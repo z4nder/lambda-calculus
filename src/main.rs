@@ -8,6 +8,7 @@ use eval::evaluate;
 
 
 fn main() {
+    // Inputs:
     // λx.((x) (x))
     // λx.λy. y
     // λx.+ x 1 notação polonesa 

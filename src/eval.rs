@@ -2,31 +2,6 @@ use std::io;
 
 use crate::parser::{App, Expr, Int, Lam};
 
-// pub struct Var {
-//     name: String,
-// }
-
-// pub struct Int {
-//     value: i32,
-// }
-
-// pub struct App {
-//     left: Box<Expr>,
-//     right: Box<Expr>,
-// }
-
-// pub struct Lam {
-//     param: String,
-//     body: Box<Expr>,
-// }
-
-// pub enum Expr {
-//     VariableInt(Int),
-//     Variable(Var),
-//     Application(App),
-//     Lambda(Lam),
-// }
-
 pub fn evaluate(expr: Expr) -> Result<Expr, String> {
     match expr {
         Expr::Lambda(lam) => {

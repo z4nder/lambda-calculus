@@ -1,22 +1,27 @@
-use std::fmt;
+use std::{collections::btree_map::Values, fmt};
 
 use crate::lexer::Token;
 
 pub struct Var {
-    name: String,
+    pub name: String,
+}
+
+pub struct Int {
+    pub value: i32,
 }
 
 pub struct App { 
-    left: Box<Expr>, 
-    right: Box<Expr>,
+    pub left: Box<Expr>, 
+    pub right: Box<Expr>,
 }
 
 pub struct Lam {
-    param: String,
-    body: Box<Expr>,
+    pub param: String,
+    pub body: Box<Expr>,
 }
 
 pub enum Expr {
+    VariableInt(Int),
     Variable(Var),
     Application(App),
     Lambda(Lam),
@@ -25,6 +30,12 @@ pub enum Expr {
 impl fmt::Display for Var {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)
+    }
+}
+
+impl fmt::Display for Int {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
     }
 }
 
@@ -43,6 +54,7 @@ impl fmt::Display for Lam {
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Expr::VariableInt(value) => write!(f, "{}", value),
             Expr::Variable(var) => write!(f, "{}", var),
             Expr::Application(app) => write!(f, "{}", app),
             Expr::Lambda(lam) => write!(f, "{}", lam),
@@ -57,9 +69,12 @@ pub fn parser(tokens:  Vec<Token>) -> Result<Expr, String> {
             match token {
                 Token::LParen => return Ok(parse_paren(tokens)?),
                 Token::Var(var) =>  return Ok(parse_var(tokens.clone(), var)),
+                Token::Int(value) =>  return Ok(parse_int(tokens.clone(), value)),
                 Token::Lambda =>  return Ok(parse_lambda(tokens)?),                
                 Token::RParen =>  return parse_paren(tokens),
-                Token::Dot => return Err("Invalid char '.'".to_string())   
+                Token::Dot => return Err("Invalid char '.'".to_string()),
+                Token::Plus => return Ok(parse_var(tokens.clone(), &"+".to_string())),
+                Token::Minus => return Ok(parse_var(tokens.clone(), &"-".to_string())),      
             };
         }
         None => return Err("Empty expression".to_string())
@@ -71,6 +86,26 @@ pub fn parse_paren(tokens: Vec<Token>) -> Result<Expr, String>{
     let tokens = remove_token(tokens);
 
    parser(tokens)
+}
+
+pub fn parse_int(tokens: Vec<Token>, value: &i32) -> Expr {  
+    // Remove #Var
+    let tokens = remove_token(tokens);
+
+    match parser(tokens) {
+        Ok(expr) => {
+            return Expr::Application(App {
+                left: Box::new(Expr::VariableInt(Int {
+                    value: value.clone(),
+                })),
+                right: Box::new(expr),
+            })
+        },
+        _ => Expr::VariableInt(Int {
+            value: value.clone(),
+             })
+    }
+   
 }
 
 pub fn parse_var(tokens: Vec<Token>, var: &String) -> Expr {  

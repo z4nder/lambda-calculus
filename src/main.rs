@@ -9,8 +9,10 @@ use eval::evaluate;
 
 fn main() {
     // λx.((x) (x))
-    // https://professor.pucgoias.edu.br/SiteDocente/admin/arquivosUpload/4442/material/Trabalho_ED1_-_Pilha_e_Fila%20-%202013-2.pdf
-    let input: String = String::from("λx.λy. x"); 
+    // λx.λy. y
+    // λx.+ x 1 notação polonesa 
+    
+    let input: String = String::from("λx.+ x 1"); 
     let tokens = lexer(input);
 
     let result = parser(tokens);
@@ -24,6 +26,4 @@ fn main() {
         },
         Err(err) => println!("Errro: {}", err),        
     };
-
-    // Question input values
 }

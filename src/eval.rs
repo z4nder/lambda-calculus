@@ -34,18 +34,13 @@ pub fn evaluate(expr: Expr) -> Result<Expr, String> {
             let param_value = get_param(param_name.clone());
 
             let binded_body = bind_expressions(param_value, param_name, *lam.body)?;
-            
-            println!("binded_body Left: {}", binded_body);
 
             Ok(evaluate(binded_body)?)
         },
         Expr::Application( app) => {    
             let left = app.left;        
-            let right = app.right;        
-            
-            println!("Evaluated Left: {}", left);
-            println!("Evaluated Right: {}", right);
-            
+            let right = app.right;     
+
             match *left {
                 Expr::Variable(var) if var.name == "+".to_string() => eval_plus(*right),
                 _ => {
@@ -88,6 +83,15 @@ pub fn bind_expressions(param: i32, original: String, body: Expr) -> Result<Expr
             Ok( Expr::Application(App {
                 left: Box::new(left),
                 right: Box::new(right),
+            }))
+        }
+        Expr::Lambda(lam) => {
+            let param_name = lam.param;
+            let binded_body = bind_expressions(param, original.clone(), *lam.body)?;
+
+            Ok(Expr::Lambda(Lam {
+                param: param_name,
+                body: Box::new(binded_body),
             }))
         }
         _ => Ok(body)
